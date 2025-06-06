@@ -1,11 +1,11 @@
-# 🐦 Twitter Clone with React and Firebase
+#  Twitter Clone with React and Firebase
 
-## 📄 Description
+##  Description
 A basic social media application inspired by Twitter, built using React and Firebase.
 
 ---
 
-## ✅ Features Implemented So Far
+##  Features Implemented So Far
 
 ### 1. **User Authentication**
 - User Signup with email, password, and username.
@@ -37,20 +37,20 @@ A basic social media application inspired by Twitter, built using React and Fire
 
 ---
 
-## 🧰 Technologies Used
+##  Technologies Used
 
-### 🔧 Frontend
+###  Frontend
 - React (with Hooks)
 - React Router (for navigation)
 
-### ☁️ Backend / Database
+### ☁ Backend / Database
 - Firebase Authentication (for user management)
 - Firestore (NoSQL Database for storing users, posts, and replies)
 - Firebase SDK
 
 ---
 
-## 🛠️ Setup / Installation Requirements
+##  Setup / Installation Requirements
 
 1. **Node.js** and **npm** (or **yarn**) installed.
 2. A Firebase project set up with:
