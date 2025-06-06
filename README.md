@@ -43,7 +43,7 @@ A basic social media application inspired by Twitter, built using React and Fire
 - React (with Hooks)
 - React Router (for navigation)
 
-### ☁ Backend / Database
+###  Backend / Database
 - Firebase Authentication (for user management)
 - Firestore (NoSQL Database for storing users, posts, and replies)
 - Firebase SDK
