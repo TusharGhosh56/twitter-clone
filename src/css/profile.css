@@ -1,0 +1,28 @@
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #646cff;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .profile-email {
+    font-size: 1rem;
+    color: #ccc;
+  }
+  

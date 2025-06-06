@@ -1,0 +1,266 @@
+* {
+    box-sizing: border-box;
+
+}
+
+html,
+body {
+    background-color: #000000;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: 23% 50% 23%;
+    gap: 10px;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.left,
+.center,
+.right {
+    color: white;
+}
+
+.left {
+    background-color: #000000;
+    border-right: 1px solid rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    padding-right: 25px;
+    gap: 11px;
+    padding-left: 25px;
+    padding-top: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    z-index: 2;
+}
+
+.home-button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid rgb(255, 255, 255);
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+.center {
+    background-color: #000000;
+    border-right: 1px solid rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.right {
+    display: flex;
+    background-color: #000000;
+    padding-top: 7rem;
+    gap: 20px;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    z-index: 2;
+}
+
+.logo {
+    font-size: 3rem;
+}
+
+.profile-button {
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-button-container {
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  margin-top: 7rem;
+}
+
+.right-feed1 {
+    border: 1px solid rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+}
+
+.right-feed2 {
+    border: 1px solid rgb(255, 255, 255);
+    border-radius: 20px;
+}
+
+.right-feed3 {
+    border: 1px solid rgb(255, 255, 255);
+    border-radius: 20px;
+}
+
+.right-feed1 img {
+    height: 10rem;
+    width: 18rem;
+    padding-left: 26px;
+    padding-top: 12px;
+
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popup {
+  background: #181818;
+  padding: 2rem 2.5rem 1.5rem 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 350px;
+  max-width: 90vw;
+}
+
+.popup-title {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.popup-textarea {
+  width: 100%;
+  min-width: 300px;
+  max-width: 100%;
+  min-height: 100px;
+  max-height: 200px;
+  border-radius: 12px;
+  border: 1px solid #444;
+  background: #222;
+  color: #fff;
+  font-size: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  resize: vertical;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.popup-textarea:focus {
+  border: 1.5px solid #1da1f2;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.popup-btn {
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.popup-btn:hover {
+  background: #0d8ddb;
+}
+
+.post-box {
+    border-bottom: 1px solid rgb(255, 255, 255);
+    padding-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: -8px;
+    padding-left: 22px;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .post-profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  textarea{
+    resize: none;
+    border: 1px white;
+    border-radius: 20px; 
+  }
+
+  textarea::placeholder{
+    padding-left: 8.5rem;
+    padding-top: 6px;
+  }
+
+  .results{
+    width: 100%;
+  }
+
+  /* .profile-button img{
+    width: 60px;
+    height: 80px;
+    border: 1px white;
+    border-radius: 40px;
+  } */
+
+  .nav-profile-image {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #fff;
+    background: #222;
+  }
+
