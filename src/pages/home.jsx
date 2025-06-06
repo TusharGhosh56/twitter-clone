@@ -5,7 +5,7 @@ import Login from './login';
 import Signup from './signup';
 import { BrowserRouter } from 'react-router-dom';
 import { db, auth } from '../js/firebase';
-import { collection, addDoc, getDocs, query as firestoreQuery, orderBy, serverTimestamp, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query as firestoreQuery, orderBy, serverTimestamp, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where, runTransaction } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import defaultProfile from '/blankprof.png';
 
@@ -24,6 +24,9 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState('');  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [openRepliesForPostId, setOpenRepliesForPostId] = useState(null); 
+  const [currentReplies, setCurrentReplies] = useState([]);
+  const [replyTextInput, setReplyTextInput] = useState(''); 
 
   const WORD_LIMIT = 140;
 
@@ -50,12 +53,42 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    
+    const fetchUserLikes = async () => {
+      if (isAuthenticated && auth.currentUser?.uid) {
+        const userPostsQuery = firestoreQuery(
+          collection(db, 'posts'),
+          where('userId', '==', auth.currentUser.uid)
+        );
+        const querySnapshot = await getDocs(userPostsQuery);
+        let totalLikes = 0;
+        querySnapshot.forEach(doc => {
+          const post = doc.data();
+          if (post.likes) {
+            totalLikes += post.likes.length;
+          }
+        });
+     
+        setUserData(prevUserData => ({
+          ...prevUserData,
+          totalLikes: totalLikes
+        }));
+      }
+    };
+
+    fetchUserLikes();
+
+  }, [isAuthenticated, auth.currentUser?.uid]); 
+
+  useEffect(() => {
     const postsQuery = firestoreQuery(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     
     const unsubscribe = onSnapshot(postsQuery, (querySnapshot) => {
       const fetchedPosts = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
+        likes: doc.data().likes || [],
+        replies: doc.data().replies || 0,
         timestamp: doc.data().timestamp?.toDate() || new Date()
       }));
       setPosts(fetchedPosts);
@@ -65,6 +98,32 @@ function Home() {
 
     return () => unsubscribe();
   }, []);
+
+ 
+  useEffect(() => {
+    if (openRepliesForPostId) {
+      const repliesQuery = firestoreQuery(
+        collection(db, 'posts', openRepliesForPostId, 'replies'),
+        orderBy('timestamp', 'asc')
+      );
+
+      const unsubscribe = onSnapshot(repliesQuery, (querySnapshot) => {
+        const fetchedReplies = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: doc.data().timestamp?.toDate() || new Date()
+        }));
+        setCurrentReplies(fetchedReplies);
+      }, (error) => {
+        console.error("Error fetching replies:", error);
+      });
+
+     
+      return () => unsubscribe();
+    } else {
+      setCurrentReplies([]); 
+    }
+  }, [openRepliesForPostId]); 
 
   const validateWordLimit = (text, limit) => {
     return text.trim().split(/\s+/).length <= limit;
@@ -78,18 +137,19 @@ function Home() {
   };
 
   const handlePostSubmit = async () => {
-    if (!userData) {
-      console.error('No user data available');
+    if (!userData || !auth.currentUser) {
+      console.error('No user data or user not authenticated');
       return;
     }
 
     try {
-      const docRef = await addDoc(collection(db, 'posts'), {
+      await addDoc(collection(db, 'posts'), {
         content: text,
         author: userData.username,
         authorImage: userData.profileImage || null,
         timestamp: serverTimestamp(),
-        likes: 0,
+        likes: [],
+        replies: 0,
         userId: auth.currentUser.uid
       });
 
@@ -98,6 +158,72 @@ function Home() {
       setActiveSection('home');
     } catch (error) {
       console.error('Error adding post:', error);
+    }
+  };
+
+  const handleLike = async (postId, likes) => {
+    if (!auth.currentUser) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    const userId = auth.currentUser.uid;
+    const postRef = doc(db, 'posts', postId);
+
+    try {
+      if (likes.includes(userId)) {
+        await updateDoc(postRef, {
+          likes: arrayRemove(userId)
+        });
+      } else {
+        await updateDoc(postRef, {
+          likes: arrayUnion(userId)
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
+
+  const handleReplySubmit = async (postId) => {
+    if (!auth.currentUser || !userData || !replyTextInput.trim()) {
+      console.error('User not authenticated, user data missing, or reply is empty');
+      return;
+    }
+
+    const replyData = {
+      content: replyTextInput,
+      author: userData.username,
+      authorImage: userData.profileImage || null,
+      timestamp: serverTimestamp(),
+      userId: auth.currentUser.uid
+    };
+
+    const postRef = doc(db, 'posts', postId);
+    const repliesCollectionRef = collection(postRef, 'replies');
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // READ: Get the parent post document first to read its current reply count
+        const postDoc = await transaction.get(postRef);
+        if (!postDoc.exists()) {
+          throw "Post does not exist!";
+        }
+
+        // WRITES: Perform all writes after the read
+        // Add the reply to the subcollection
+        transaction.set(doc(repliesCollectionRef), replyData);
+
+        // Increment the reply count on the parent post
+        const newRepliesCount = (postDoc.data().replies || 0) + 1;
+        transaction.update(postRef, { replies: newRepliesCount });
+      });
+
+      console.log('Reply added and count incremented');
+      setReplyTextInput(''); // Clear input after submission
+
+    } catch (error) {
+      console.error('Error adding reply or updating count:', error);
     }
   };
 
@@ -175,7 +301,64 @@ function Home() {
                     <p>{post.content}</p>
                     <div className="post-footer">
                       <span>{post.timestamp.toLocaleString()}</span>
+                      <button 
+                        onClick={() => handleLike(post.id, post.likes)}
+                        disabled={!isAuthenticated}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: post.likes.includes(auth.currentUser?.uid) ? '#1da1f2' : '#fff',
+                          cursor: isAuthenticated ? 'pointer' : 'not-allowed',
+                          opacity: isAuthenticated ? 1 : 0.5,
+                        }}
+                      >
+                        ❤️ {post.likes.length}
+                      </button>
+                      <button
+                        onClick={() => setOpenRepliesForPostId(openRepliesForPostId === post.id ? null : post.id)}
+                        disabled={!isAuthenticated}
+                         style={{
+                          background: 'none',
+                          border: 'none',
+                          color: openRepliesForPostId === post.id ? '#1da1f2' : '#fff',
+                          cursor: isAuthenticated ? 'pointer' : 'not-allowed',
+                          opacity: isAuthenticated ? 1 : 0.5,
+                        }}
+                      >
+                        💬 {post.replies}
+                      </button>
                     </div>
+                    {openRepliesForPostId === post.id && (
+                      <div className="replies-section">
+                        <div className="reply-input-area">
+                          <textarea
+                            placeholder="Write a reply..."
+                            value={replyTextInput}
+                            onChange={(e) => setReplyTextInput(e.target.value)}
+                            className="reply-textarea"
+                          />
+                          <button 
+                            onClick={() => handleReplySubmit(post.id)}
+                            disabled={!replyTextInput.trim()}
+                            className="reply-submit-btn"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div className="replies-list">
+                          {currentReplies.map(reply => (
+                            <div key={reply.id} className="reply-item">
+                              <div className="reply-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <img src={reply.authorImage || defaultProfile} alt="Reply Author" className="reply-profile-image" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
+                                <strong>{reply.author}</strong>
+                                <span>{reply.timestamp.toLocaleString()}</span>
+                              </div>
+                              <p>{reply.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

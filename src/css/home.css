@@ -264,3 +264,112 @@ body {
     background: #222;
   }
 
+.replies-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #333;
+  width: 100%;
+}
+
+.reply-input-area {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: flex-end;
+}
+
+.reply-textarea {
+  flex-grow: 1;
+  min-height: 40px; 
+  max-height: 100px; 
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: #fff;
+  font-size: 0.9rem;
+  resize: vertical; 
+  outline: none;
+}
+
+.reply-textarea::placeholder {
+  color: #888;
+}
+
+.reply-submit-btn {
+  background-color: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  height: 40px; 
+}
+
+.reply-submit-btn:hover {
+  background-color: #0d8ddb;
+}
+
+.reply-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.replies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+}
+
+.reply-item {
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  padding-left: 10px; 
+}
+
+.reply-item:last-child {
+  border-bottom: none; 
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+}
+
+.reply-profile-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reply-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #ddd;
+}
+
+.logout-button {
+  background-color: #ff4d4f; /* Red color for logout */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 20px; /* Add some space above the button */
+  align-self: center; /* Center the button if profile-container is flex column */
+}
+
+.logout-button:hover {
+  background-color: #f5222d;
+}
+
