@@ -28,7 +28,7 @@ function Home() {
   const [currentReplies, setCurrentReplies] = useState([]);
   const [replyTextInput, setReplyTextInput] = useState(''); 
 
-  const WORD_LIMIT = 140;
+  const CHARACTER_LIMIT = 140;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -125,13 +125,13 @@ function Home() {
     }
   }, [openRepliesForPostId]); 
 
-  const validateWordLimit = (text, limit) => {
-    return text.trim().split(/\s+/).length <= limit;
+  const validateCharacterLimit = (text, limit) => {
+    return text.length <= limit;
   };
 
   const handleTextChange = (e) => {
     const value = e.target.value;
-    if (validateWordLimit(value, WORD_LIMIT)) {
+    if (validateCharacterLimit(value, CHARACTER_LIMIT)) {
       setText(value);
     }
   };
@@ -332,7 +332,7 @@ function Home() {
                       <div className="replies-section">
                         <div className="reply-input-area">
                           <textarea
-                            placeholder="Write a reply..."
+                            placeholder={`Write a reply (Max ${CHARACTER_LIMIT} characters)...`}
                             value={replyTextInput}
                             onChange={(e) => setReplyTextInput(e.target.value)}
                             className="reply-textarea"
@@ -464,7 +464,7 @@ function Home() {
               <textarea
                 value={text}
                 onChange={handleTextChange}
-                placeholder={`Max ${WORD_LIMIT} words`}
+                placeholder={`Max ${CHARACTER_LIMIT} characters`}
                 rows={5}
                 className="popup-textarea"
               />
