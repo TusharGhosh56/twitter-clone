@@ -9,13 +9,6 @@ import { collection, addDoc, getDocs, query as firestoreQuery, orderBy, serverTi
 import { onAuthStateChanged } from 'firebase/auth';
 import defaultProfile from '/blankprof.png';
 
-const peopleData = [
-  { name: "Alice", image: "/img3.jpg" },
-  { name: "rahul", image: "/img4.jpg" },
-  { name: "kiran", image: "/img5.jpg" },
-  { name: "charlie", image: "/img6.jpg" },
-];
-
 function Home() {
   const [activeSection, setActiveSection] = useState('home');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -24,9 +17,11 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState('');  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [openRepliesForPostId, setOpenRepliesForPostId] = useState(null); 
+  const [openRepliesForPostId, setOpenRepliesForPostId] = useState(null);
   const [currentReplies, setCurrentReplies] = useState([]);
-  const [replyTextInput, setReplyTextInput] = useState(''); 
+  const [replyTextInput, setReplyTextInput] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const CHARACTER_LIMIT = 140;
 
@@ -53,7 +48,6 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    
     const fetchUserLikes = async () => {
       if (isAuthenticated && auth.currentUser?.uid) {
         const userPostsQuery = firestoreQuery(
@@ -124,6 +118,48 @@ function Home() {
       setCurrentReplies([]); 
     }
   }, [openRepliesForPostId]); 
+
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (searchQuery.trim() === '') {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+
+      try {
+        const usersQuery = firestoreQuery(
+          collection(db, 'users'),
+          where('username', '>=', searchQuery),
+          where('username', '<=', searchQuery + '~^')
+        );
+        
+        const querySnapshot = await getDocs(usersQuery);
+        
+        const results = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(user => user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        setSearchResults(results);
+        
+      } catch (error) {
+        console.error("Error searching users:", error);
+        setSearchResults([]);
+      }
+      setIsSearching(false);
+    };
+
+    const handler = setTimeout(() => {
+      searchUsers();
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+
+  }, [searchQuery]);
 
   const validateCharacterLimit = (text, limit) => {
     return text.length <= limit;
@@ -204,38 +240,31 @@ function Home() {
 
     try {
       await runTransaction(db, async (transaction) => {
-        // READ: Get the parent post document first to read its current reply count
         const postDoc = await transaction.get(postRef);
         if (!postDoc.exists()) {
           throw "Post does not exist!";
         }
 
-        // WRITES: Perform all writes after the read
-        // Add the reply to the subcollection
         transaction.set(doc(repliesCollectionRef), replyData);
 
-        // Increment the reply count on the parent post
         const newRepliesCount = (postDoc.data().replies || 0) + 1;
         transaction.update(postRef, { replies: newRepliesCount });
       });
 
       console.log('Reply added and count incremented');
-      setReplyTextInput(''); // Clear input after submission
+      setReplyTextInput('');
 
     } catch (error) {
       console.error('Error adding reply or updating count:', error);
     }
   };
 
-  const filteredPeople = peopleData.filter(person =>
-    person.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   useEffect(() => {
     function handleClickOutside(event) {
       const searchContainer = document.getElementById('search-container');
       if (searchContainer && !searchContainer.contains(event.target)) {
         setSearchQuery('');
+        setSearchResults([]);
       }
     }
     if (searchQuery) {
@@ -393,11 +422,12 @@ function Home() {
               }}
               rows={1}
             />
-            {searchQuery && (
+            {isSearching && <p>Searching...</p>}
+            {searchQuery && !isSearching && (searchResults.length > 0 || !isSearching) && (
               <div
                 style={{
                   maxHeight: '200px',
-                  overflowY: 'hidden',
+                  overflowY: 'auto',
                   border: '1px solid #ccc',
                   marginTop: '5px',
                   borderRadius: '4px',
@@ -409,24 +439,24 @@ function Home() {
                   left: 0,
                 }}
               >
-                {filteredPeople.length > 0 ? (
-                  filteredPeople.map((person, index) => (
+                {searchResults.length > 0 ? (
+                  searchResults.map((person) => (
                     <div
-                      key={index}
+                      key={person.id}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         padding: '8px 10px',
                         borderBottom: '1px solid #eee',
-                        cursor: 'default',
+                        cursor: 'pointer',
                         width: '100%',
                         boxSizing: 'border-box',
                         color: 'black',
                       }}
                     >
                       <img
-                        src={person.image}
-                        alt={person.name}
+                        src={person.profileImage || defaultProfile}
+                        alt={person.username}
                         style={{
                           width: '40px',
                           height: '40px',
@@ -435,7 +465,7 @@ function Home() {
                           marginRight: '10px',
                         }}
                       />
-                      <span>{person.name}</span>
+                      <span>{person.username}</span>
                     </div>
                   ))
                 ) : (
