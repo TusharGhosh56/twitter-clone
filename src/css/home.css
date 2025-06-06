@@ -356,7 +356,7 @@ body {
 }
 
 .logout-button {
-  background-color: #ff4d4f; /* Red color for logout */
+  background-color: #ff4d4f; 
   color: white;
   border: none;
   border-radius: 8px;
@@ -365,8 +365,8 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-top: 20px; /* Add some space above the button */
-  align-self: center; /* Center the button if profile-container is flex column */
+  margin-top: 20px; 
+  align-self: center; 
 }
 
 .logout-button:hover {
