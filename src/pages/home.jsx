@@ -21,7 +21,11 @@ function Home() {
   const [currentReplies, setCurrentReplies] = useState([]);
   const [replyTextInput, setReplyTextInput] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearching, setDebouncing] = useState(false);   /*added a debouncing state variable that has 2 states 
+                                                          true(user is typing) and false(user stopped typing).
+                                                          Now the useEffect for search only fires after the user 
+                                                          has stopped typing for a full second*/
+                                                          
 
   const CHARACTER_LIMIT = 140;
 
@@ -123,11 +127,11 @@ function Home() {
     const searchUsers = async () => {
       if (searchQuery.trim() === '') {
         setSearchResults([]);
-        setIsSearching(false);
+        setDebouncing(false);
         return;
       }
 
-      setIsSearching(true);
+      setDebouncing(true);
 
       try {
         const usersQuery = firestoreQuery(
@@ -148,12 +152,12 @@ function Home() {
         console.error("Error searching users:", error);
         setSearchResults([]);
       }
-      setIsSearching(false);
+      setDebouncing(false);
     };
 
     const handler = setTimeout(() => {
       searchUsers();
-    }, 300);
+    }, 1000);
 
     return () => {
       clearTimeout(handler);
